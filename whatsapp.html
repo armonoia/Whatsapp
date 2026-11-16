@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>(1) Chat | Mensajes</title>
+  <link rel="stylesheet" href="whatsapp.css">
+</head>
+<body>
+
+  <div class="app" id="app">
+
+    <!-- Pantalla de inicio: el toque deja que suene el sonido de los mensajes
+         (se puede sacar poniendo PEDIR_TOQUE_INICIAL = false en whatsapp.js) -->
+    <div class="inicio" id="inicio" hidden>
+      <button type="button" id="inicioBtn">Tocá para abrir el chat</button>
+    </div>
+
+    <!-- Panel izquierdo: lista de chats (los arma whatsapp.js) -->
+    <aside class="sidebar">
+      <div class="sidebar-top">
+        <div class="avatar">🙂</div>
+        <div class="sidebar-iconos">◔ ▤ ⋮</div>
+      </div>
+      <div class="buscador"><div>🔍 Buscar un chat o iniciar uno nuevo</div></div>
+      <div class="lista-chats" id="listaChats"></div>
+    </aside>
+
+    <!-- Panel derecho: conversación -->
+    <main class="chat">
+      <header class="chat-header">
+        <button class="volver" id="volver" type="button" aria-label="Volver a la lista de chats">←</button>
+        <div class="avatar" id="headerAvatar">👔</div>
+        <div>
+          <div class="titulo" id="headerTitulo">Jefe</div>
+          <div class="estado" id="estado">en línea</div>
+        </div>
+      </header>
+
+      <div class="zona-chat">
+        <!-- Fondo con el patrón de imágenes (lo genera whatsapp.js) -->
+        <div class="patron" id="patron" aria-hidden="true"></div>
+        <!-- Acá se crea una conversación por cada chat -->
+        <div class="paneles" id="paneles"></div>
+      </div>
+
+      <footer class="pie">
+        <div id="opcionesCont"></div>
+        <div class="fake-input">
+          <span class="iconos">☺</span>
+          <div class="caja" id="caja">Elegí una respuesta rápida</div>
+          <span class="iconos">🎤</span>
+        </div>
+      </footer>
+    </main>
+
+  </div>
+
+  <script src="whatsapp.js"></script>
+</body>
+</html>
