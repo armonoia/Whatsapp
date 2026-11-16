@@ -1,18 +1,4 @@
-// ============================================================
-//  GUION DE LAS CONVERSACIONES
-//  Cada chat tiene su propio guion. Dentro del guion:
-//  - { de: "jefe", texto: "..." }  -> mensaje que LLEGA (el "de" es solo
-//    una etiqueta para que te ubiques; cualquier mensaje con texto llega)
-//  - { de: "fede", imagen: "captura-entradas.png", texto: "..." }
-//    -> mensaje que llega con una captura (el texto es opcional)
-//  - "hora" (opcional) es la hora que se ve en el mensaje. Tus respuestas
-//    salen un minuto después del último mensaje que llegó.
-//  - { opciones: [{ boton: "...", envia: "..." }, ...] } -> respuestas
-//    "boton" es el texto que se ve en la nota amarilla (lo que pensás)
-//    "envia" es lo que realmente aparece en el chat (siempre dice que sí)
-//  - { corte: true } -> el guion frena ahí hasta que se pase a la fase siguiente
-//  Podés editar los textos libremente.
-// ============================================================
+
 const CHATS = [
   // ---------- Chat del jefe: arranca solo apenas se abre la página ----------
   {
@@ -196,6 +182,9 @@ const SONIDO_ENVIADO = "sonido-enviado.mp3";
 // true: antes de empezar hay que tocar la pantalla (así el navegador deja que suene el sonido)
 // false: arranca solo, pero el sonido recién anda después del primer toque
 const PEDIR_TOQUE_INICIAL = true;
+
+// En la fase de las 15hs, abre solo el chat de Fede (así en el celular no te lo perdés)
+const ABRIR_FEDE_DIRECTO = true;
 
 // ---------- Elementos ----------
 const app = document.getElementById("app");
@@ -458,10 +447,12 @@ function ocultarEscribiendo(chat, indicador) {
   refrescarEstado();
 }
 
-// Un mensaje llega: se pone en la conversación y se avisa en la lista
+
 function recibir(chat, paso) {
   agregarMensaje(chat, paso, "entrante");
-  if (chat !== activo) chat.sinLeer++;
+  // "Mirando" = ese chat está abierto y no estás en la lista (en el celular)
+  const mirando = chat === activo && !app.classList.contains("en-lista");
+  if (!mirando) chat.sinLeer++;
   actualizarBadge(chat);
   actualizarLista(chat, resumen(paso), paso.hora);
   if (paso.hora) chat.ultimaHora = paso.hora;
@@ -573,15 +564,23 @@ async function correrGuion(chat, desde = 0) {
   }
 }
 
-// Fede aparece arriba de la lista con su primer mensaje (la captura);
-// el resto de la charla arranca cuando se abre el chat.
 function llegadaDeFede(chat) {
   chat.item.hidden = false;
   listaEl.prepend(chat.item);
-  chat.item.classList.add("nuevo-chat");
   recibir(chat, chat.guion[0]);
   chat.siguiente = 1;
   chat.alAbrir = true;
+
+  if (chat === activo) {
+    if (!chat.iniciado) {
+      chat.iniciado = true;
+      correrGuion(chat, chat.siguiente).then(() => {
+        if (chat.alTerminar) chat.alTerminar();
+      });
+    }
+  } else {
+    chat.item.classList.add("nuevo-chat");
+  }
 }
 
 // Pantalla que bloquea todo hasta tocar el botón (sirve para cada cambio de fase)
@@ -613,6 +612,7 @@ async function iniciar() {
 
   // ---------- FASE 2: las 15hs (llega Fede con las entradas) ----------
   await pedirToque("Pasar a las 15hs");
+  if (ABRIR_FEDE_DIRECTO) abrirChat(fede); // te deja parada en el chat de Fede esperando
   await esperar(ESPERA_FEDE);
   llegadaDeFede(fede);
   // Espera a que termine toda la charla con Fede (cuando abrís su chat)
