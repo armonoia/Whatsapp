@@ -86,6 +86,98 @@ body {
   display: none;
 }
 
+/* Cuando hay cartel, el fondo es más suave para que se vea el chat de atrás */
+.inicio.con-mensaje {
+  background: rgba(23, 13, 34, 0.7);
+}
+
+.inicio-caja {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 22px;
+  padding: 0 20px;
+  text-align: center;
+}
+
+/* Cartel pop up: "Volvé a tus tareas en Unreal" (ventana grande que "salta") */
+.inicio-mensaje {
+  display: flex;
+  flex-direction: column;
+  width: min(90%, 780px);
+  background: var(--violeta);
+  border: 3px solid var(--fucsia);
+  border-radius: 22px;
+  overflow: hidden;
+  box-shadow:
+    0 0 0 8px rgba(255, 0, 84, 0.22),
+    0 24px 70px rgba(0, 0, 0, 0.65);
+  animation: popup 0.5s cubic-bezier(0.2, 1.4, 0.4, 1);
+}
+
+.inicio-mensaje[hidden] {
+  display: none;
+}
+
+/* Barra de ventana, con los tres puntitos de la paleta */
+.popup-barra {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 38px;
+  padding: 0 16px;
+  background: var(--fucsia);
+}
+
+.popup-barra span {
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background: var(--amarillo);
+}
+
+.popup-barra span:nth-child(2) {
+  background: var(--verde);
+}
+
+.popup-barra span:nth-child(3) {
+  background: var(--violeta);
+}
+
+.popup-texto {
+  font-family: "FuenteGlobos", "Segoe UI", Helvetica, Arial, sans-serif;
+  color: var(--amarillo);
+  text-align: center;
+  font-size: clamp(2.2rem, 6vw, 4rem);
+  line-height: 1.15;
+  padding: 48px 36px 54px;
+}
+
+@keyframes popup {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* El botón de la fase siguiente aparece con un fundido */
+.inicio button.aparece {
+  animation: fundido 1.4s ease-out;
+}
+
+@keyframes fundido {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
 .inicio button {
   font-family: "FuenteGlobos", "Segoe UI", Helvetica, Arial, sans-serif;
   background: var(--violeta);

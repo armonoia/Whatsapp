@@ -13,7 +13,14 @@
     <!-- Pantalla de inicio: el toque deja que suene el sonido de los mensajes
          (se puede sacar poniendo PEDIR_TOQUE_INICIAL = false en whatsapp.js) -->
     <div class="inicio" id="inicio" hidden>
-      <button type="button" id="inicioBtn">Tocá para abrir el chat</button>
+      <div class="inicio-caja">
+        <!-- Cartel pop up (barra de ventana + mensaje) -->
+        <div class="inicio-mensaje" id="inicioMensaje" role="alert" hidden>
+          <div class="popup-barra" aria-hidden="true"><span></span><span></span><span></span></div>
+          <p class="popup-texto" id="inicioMensajeTexto"></p>
+        </div>
+        <button type="button" id="inicioBtn">Tocá para abrir el chat</button>
+      </div>
     </div>
 
     <!-- Panel izquierdo: lista de chats (los arma whatsapp.js) -->

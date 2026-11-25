@@ -119,58 +119,72 @@ const CHATS = [
     avatar: "😎",
     foto: "foto-fede.png",
     oculto: true,
+    horaInicial: "15:09",
     guion: [
+      // Primero hablás vos: el botón y el mensaje enviado dicen exactamente lo mismo
+      {
+        hora: "15:09", // hora a la que sale tu mensaje
+        opciones: [
+          {
+            boton: "amigo conseguiste entrada?",
+            envia: "amigo conseguiste entrada?",
+          },
+        ],
+      },
+
+      { de: "fede", texto: "siii amigo", hora: "15:10" },
+
       {
         de: "fede",
         imagen: "captura-entradas.png",
-        texto: "noooo boludooo consegui entradas, que onda vos? te consigo una sino",
+        texto: "re voy, venis no? o te conseguimos entradas? conozco un tipo que revende, no va a salir unos mangos pero vamoooo",
         hora: "15:10",
       },
 
       {
         opciones: [
           {
-            boton: "amigo olvidate mandale",
-            envia: "no amigo, trabajo asi que pinchó mal",
+            boton: "si amigoooo olvidate ya fue",
+            envia: "no amigo, trabajo ese día asi que pinchó mal, me lo llego a pedir y me matan",
           },
           {
             boton: "re falto al laburo no me importa nada",
-            envia: "no tranqui amigo, otra vez será posta no me puedo pedir el día",
+            envia: "no tranqui amigo no consegui y aparte laburo ese dia, ya falte una banda imposible pedirme otro día más",
           },
           {
             boton: "gordo no me hagas estoooo",
-            envia: "no amigo ando full laburo",
+            envia: "no amigo ando full laburo ese día, asi que ya fue. Me llego a pedir el dia y me rajan ni pinta",
           },
         ],
       },
 
-      { de: "fede", texto: "daa pero posta te lo vas a perder? es tu banda", hora: "15:12" },
-      { de: "fede", texto: "ya fuee cerra todo y vamo", hora: "15:12" },
+      { de: "fede", texto: "daa amigooo, pero posta te lo vas a perder? es tu banda", hora: "15:12" },
+      { de: "fede", texto: "ya fuee cerra todo y vamo si total siempre te dejan en banda a vos ahí, todo bien que te guste el laburo pero es limp bizkit boludo", hora: "15:12" },
 
       {
         opciones: [
           {
-            boton: "no hay nada que desee mas que ir amigo te juro, ya fue no?",
-            envia: "no amigo posta no puedo, me mata mi jefe",
+            boton: "sabes que si tenes razon gordo, olvidateee yendo",
+            envia: "no amigo posta no puedo, hay que laburar es así",
           },
           {
             boton: "uh lpm pero si quiero irrr",
-            envia: "no amigo tranka ya se va a dar",
+            envia: "no amigo tranka otro vez será ya fuee, prefiero bancarmela esta vez",
           },
           {
-            boton: "QUE SIII QUIERO IRRRR LOCOOOO",
-            envia: "amigoo, laburo olvidate, gracias igual",
+            boton: "QUE SIII QUIERO IRRRR",
+            envia: "amigoo, laburo olvidate, gracias igual pero no puedo faltar de nuevo",
           },
         ],
       },
 
       { de: "fede", texto: "👍", hora: "15:14" },
-      { de: "fede", texto: "bueno suerte gato olvidate tranqui", hora: "15:15" },
+      { de: "fede", texto: "bueno amigo olvidate tranqui, ya se nos dará", hora: "15:15" },
     ],
   },
 ];
 
-// Cuánto después de tocar "Pasar a las 15hs" le llega el mensaje de Fede (en milisegundos)
+// Cuánto tarda en aparecer la charla con Fede después de tocar "Hablar con Fede (15hs)" (en milisegundos)
 const ESPERA_FEDE = 2500;
 
 // Sonido que suena cuando llega un mensaje (poné el archivo en esta misma carpeta)
@@ -182,6 +196,15 @@ const SONIDO_ENVIADO = "sonido-enviado.mp3";
 // true: antes de empezar hay que tocar la pantalla (así el navegador deja que suene el sonido)
 // false: arranca solo, pero el sonido recién anda después del primer toque
 const PEDIR_TOQUE_INICIAL = true;
+
+// Cartel que aparece cuando termina una fase
+const MENSAJE_TAREAS = "Volvé a tus tareas en Unreal";
+
+// Cartel que aparece al final de todo, después del último chat con el jefe
+const MENSAJE_FINAL = "Volvé a tus tareas en Unreal";
+
+// Cuánto tarda en aparecer el botón de la fase siguiente (en milisegundos)
+const ESPERA_BOTON = 10000;
 
 // En la fase de las 15hs, abre solo el chat de Fede (así en el celular no te lo perdés)
 const ABRIR_FEDE_DIRECTO = true;
@@ -198,6 +221,8 @@ const cajaEl = document.getElementById("caja");
 const volverBtn = document.getElementById("volver");
 const inicioEl = document.getElementById("inicio");
 const inicioBtn = document.getElementById("inicioBtn");
+const inicioMensajeEl = document.getElementById("inicioMensaje");
+const inicioMensajeTexto = document.getElementById("inicioMensajeTexto");
 
 let activo = null; // chat que se está viendo
 
@@ -299,7 +324,6 @@ function crearChat(chat) {
   chat.iniciado = false;
   chat.escribiendo = false;
   chat.siguiente = 0;
-  chat.alAbrir = false;
 
   // Conversación (se ve solo cuando el chat está abierto)
   chat.panel = el("section", "mensajes");
@@ -379,14 +403,6 @@ function abrirChat(chat) {
   cajaEl.textContent = chat.estatico ? "Escribí un mensaje" : "Elegí una respuesta rápida";
   refrescarEstado();
   bajarScroll(chat, false);
-
-  // El chat de Fede sigue recién cuando se abre
-  if (chat.alAbrir && !chat.iniciado) {
-    chat.iniciado = true;
-    correrGuion(chat, chat.siguiente).then(() => {
-      if (chat.alTerminar) chat.alTerminar();
-    });
-  }
 }
 
 // ---------- Mensajes ----------
@@ -533,10 +549,10 @@ function elegirRespuesta(chat, opciones) {
   });
 }
 
-async function respuestaUsuario(chat, opciones) {
+async function respuestaUsuario(chat, opciones, horaFija) {
   const texto = await elegirRespuesta(chat, opciones);
-  // Sale un minuto después del último mensaje que llegó
-  const hora = chat.ultimaHora ? sumarMinutos(chat.ultimaHora, 1) : horaActual();
+  // Sale a la hora fija del guion, o un minuto después del último mensaje que llegó
+  const hora = horaFija || (chat.ultimaHora ? sumarMinutos(chat.ultimaHora, 1) : horaActual());
   const tilde = agregarMensaje(chat, { texto, hora }, "saliente");
   chat.ultimaHora = hora;
   sonarEnviado();
@@ -556,7 +572,7 @@ async function correrGuion(chat, desde = 0) {
       return;
     }
     if (paso.opciones) {
-      await respuestaUsuario(chat, paso.opciones);
+      await respuestaUsuario(chat, paso.opciones, paso.hora);
     } else {
       await mensajeEntrante(chat, paso);
     }
@@ -567,37 +583,63 @@ async function correrGuion(chat, desde = 0) {
 function llegadaDeFede(chat) {
   chat.item.hidden = false;
   listaEl.prepend(chat.item);
-  recibir(chat, chat.guion[0]);
-  chat.siguiente = 1;
-  chat.alAbrir = true;
 
-  if (chat === activo) {
-    if (!chat.iniciado) {
-      chat.iniciado = true;
-      correrGuion(chat, chat.siguiente).then(() => {
-        if (chat.alTerminar) chat.alTerminar();
-      });
-    }
-  } else {
+  // Si no estás mirando su chat, te avisa con el latido y el contador
+  if (chat !== activo) {
+    chat.sinLeer = 1;
+    actualizarBadge(chat);
     chat.item.classList.add("nuevo-chat");
   }
+
+  // La charla arranca sola desde el primer paso (tu mensaje)
+  chat.iniciado = true;
+  correrGuion(chat, 0).then(() => {
+    if (chat.alTerminar) chat.alTerminar();
+  });
 }
 
-// Pantalla que bloquea todo hasta tocar el botón (sirve para cada cambio de fase)
-function pedirToque(texto) {
+// Pantalla que bloquea todo hasta tocar el botón (sirve para cada cambio de fase).
+//  - mensaje: cartel opcional que se ve arriba del botón
+//  - espera: milisegundos hasta que el botón aparece (con fundido). 0 = aparece ya.
+function pedirToque(texto, mensaje = "", espera = 0) {
   return new Promise((resolver) => {
+    inicioMensajeTexto.textContent = mensaje;
+    inicioMensajeEl.hidden = !mensaje;
+    inicioEl.classList.toggle("con-mensaje", !!mensaje);
     inicioBtn.textContent = texto;
+    inicioBtn.classList.remove("aparece");
+    inicioBtn.hidden = espera > 0;
     inicioEl.hidden = false;
+
+    const timer =
+      espera > 0
+        ? setTimeout(() => {
+            inicioBtn.hidden = false;
+            inicioBtn.classList.add("aparece");
+          }, espera)
+        : null;
+
     inicioBtn.addEventListener(
       "click",
       () => {
+        clearTimeout(timer);
         inicioEl.hidden = true;
+        inicioMensajeEl.hidden = true;
         desbloquearSonido();
         resolver();
       },
       { once: true }
     );
   });
+}
+
+// Cartel final: queda en pantalla, sin botón (es el cierre de la experiencia)
+function mostrarCartelFinal(mensaje) {
+  inicioMensajeTexto.textContent = mensaje;
+  inicioMensajeEl.hidden = false;
+  inicioEl.classList.add("con-mensaje");
+  inicioBtn.hidden = true;
+  inicioEl.hidden = false;
 }
 
 async function iniciar() {
@@ -611,7 +653,7 @@ async function iniciar() {
   await esperar(1200);
 
   // ---------- FASE 2: las 15hs (llega Fede con las entradas) ----------
-  await pedirToque("Pasar a las 15hs");
+  await pedirToque("Hablar con Fede (15hs)", MENSAJE_TAREAS, ESPERA_BOTON);
   if (ABRIR_FEDE_DIRECTO) abrirChat(fede); // te deja parada en el chat de Fede esperando
   await esperar(ESPERA_FEDE);
   llegadaDeFede(fede);
@@ -622,10 +664,14 @@ async function iniciar() {
   await esperar(1500);
 
   // ---------- FASE FINAL: las 20hs (vuelve el jefe) ----------
-  await pedirToque("Pasar a fase final");
+  await pedirToque("Hablar con el jefe (20hs)", MENSAJE_TAREAS, ESPERA_BOTON);
   abrirChat(jefe);
   await esperar(1500);
   await correrGuion(jefe, jefe.siguiente);
+
+  // ---------- FINAL: cartel para volver a Unreal ----------
+  await esperar(1500);
+  mostrarCartelFinal(MENSAJE_FINAL);
 }
 
 // ---------- Patrón de fondo con tus imágenes ----------
