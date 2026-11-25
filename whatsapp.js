@@ -123,19 +123,19 @@ const CHATS = [
       {
         de: "fede",
         imagen: "captura-entradas.png",
-        texto: "noooo boludooo consegui entradas, re voy, venis no?",
+        texto: "noooo boludooo consegui entradas, que onda vos? te consigo una sino",
         hora: "15:10",
       },
 
       {
         opciones: [
           {
-            boton: "si amigo guardame entradas olvidate",
+            boton: "amigo olvidate mandale",
             envia: "no amigo, trabajo asi que pinchó mal",
           },
           {
             boton: "re falto al laburo no me importa nada",
-            envia: "no tranqui amigo no consegui, otra vez será",
+            envia: "no tranqui amigo, otra vez será posta no me puedo pedir el día",
           },
           {
             boton: "gordo no me hagas estoooo",
@@ -144,21 +144,21 @@ const CHATS = [
         ],
       },
 
-      { de: "fede", texto: "daa gato pero posta te lo vas a perder? es tu banda", hora: "15:12" },
+      { de: "fede", texto: "daa pero posta te lo vas a perder? es tu banda", hora: "15:12" },
       { de: "fede", texto: "ya fuee cerra todo y vamo", hora: "15:12" },
 
       {
         opciones: [
           {
-            boton: "sabes que si olvidateee yendo",
-            envia: "no amigo posta no puedo",
+            boton: "no hay nada que desee mas que ir amigo te juro, ya fue no?",
+            envia: "no amigo posta no puedo, me mata mi jefe",
           },
           {
             boton: "uh lpm pero si quiero irrr",
-            envia: "no amigo tranka otro día",
+            envia: "no amigo tranka ya se va a dar",
           },
           {
-            boton: "QUE SIII QUIERO IRRRR",
+            boton: "QUE SIII QUIERO IRRRR LOCOOOO",
             envia: "amigoo, laburo olvidate, gracias igual",
           },
         ],
