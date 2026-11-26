@@ -561,9 +561,55 @@ function mostrarCartelFinal(mensaje) {
   inicioEl.hidden = false;
 }
 
+// ---------- Qué fase se abre (para los códigos QR) ----------
+// Link normal (sin nada)  -> juega todo: las 9hs y después las 20hs
+// ...?fase=9              -> solo la fase de las 9hs; al terminar queda el cartel "Volvé a la tienda"
+// ...?fase=20             -> arranca directo en la fase de las 20hs (la charla de las 9hs ya figura hecha)
+const FASE = new URLSearchParams(location.search).get("fase");
+
+// Pone la charla de las 9hs ya hecha (sin animación), para cuando se entra directo a las 20hs.
+// Tus respuestas salen con la primera opción de cada pregunta.
+function cargarHistorialJefe(jefe) {
+  for (let i = 0; i < jefe.guion.length; i++) {
+    const paso = jefe.guion[i];
+    if (paso.corte) {
+      jefe.siguiente = i + 1;
+      break;
+    }
+    if (paso.opciones) {
+      const hora = jefe.ultimaHora ? sumarMinutos(jefe.ultimaHora, 1) : horaActual();
+      agregarMensaje(jefe, { texto: paso.opciones[0].envia, hora }, "saliente").classList.add("leido");
+      jefe.ultimaHora = hora;
+    } else {
+      agregarMensaje(jefe, paso, "entrante");
+      if (paso.hora) jefe.ultimaHora = paso.hora;
+    }
+  }
+  const ultimo = jefe.guion[jefe.siguiente - 2];
+  if (ultimo && ultimo.texto) actualizarLista(jefe, "Vos: " + ultimo.texto, jefe.ultimaHora);
+  jefe.iniciado = true;
+}
+
+function mostrarFede(fede) {
+  fede.item.hidden = false;
+  listaEl.prepend(fede.item);
+}
+
 async function iniciar() {
   const jefe = CHATS.find((c) => c.id === "jefe");
   const fede = CHATS.find((c) => c.id === "fede");
+
+  // ---------- Entrada directa a las 20hs (QR de las 20hs) ----------
+  if (FASE === "20") {
+    cargarHistorialJefe(jefe);
+    mostrarFede(fede);
+    abrirChat(jefe);
+    await esperar(1500);
+    await correrGuion(jefe, jefe.siguiente);
+    await esperar(1500);
+    mostrarCartelFinal(MENSAJE_FINAL);
+    return;
+  }
 
   // ---------- FASE 1: las 9am (chat del jefe + Pedro) ----------
   await esperar(1500);
@@ -571,10 +617,15 @@ async function iniciar() {
   await correrGuion(jefe); // frena en el { corte: true }
   await esperar(1200);
 
+  // ---------- Entrada por el QR de las 9hs: termina acá ----------
+  if (FASE === "9") {
+    mostrarCartelFinal(MENSAJE_FINAL);
+    return;
+  }
+
   // ---------- FASE FINAL: las 20hs (vuelve el jefe y aparece el chat de Fede en la lista) ----------
   await pedirToque("Hablar con el jefe (20hs)", MENSAJE_TAREAS, ESPERA_BOTON);
-  fede.item.hidden = false;
-  listaEl.prepend(fede.item);
+  mostrarFede(fede);
   abrirChat(jefe);
   await esperar(1500);
   await correrGuion(jefe, jefe.siguiente);
