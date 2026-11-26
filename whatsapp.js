@@ -562,9 +562,8 @@ function mostrarCartelFinal(mensaje) {
 }
 
 // ---------- Qué fase se abre (para los códigos QR) ----------
-// Link normal (sin nada)  -> juega todo: las 9hs y después las 20hs
-// ...?fase=9              -> solo la fase de las 9hs; al terminar queda el cartel "Volvé a la tienda"
-// ...?fase=20             -> arranca directo en la fase de las 20hs (la charla de las 9hs ya figura hecha)
+// Link normal o ...?fase=9 -> juega todo desde el principio: las 9hs y después las 20hs (con su botón)
+// ...?fase=20              -> arranca directo en la fase de las 20hs (la charla de las 9hs ya figura hecha)
 const FASE = new URLSearchParams(location.search).get("fase");
 
 // Pone la charla de las 9hs ya hecha (sin animación), para cuando se entra directo a las 20hs.
@@ -616,12 +615,6 @@ async function iniciar() {
   jefe.iniciado = true;
   await correrGuion(jefe); // frena en el { corte: true }
   await esperar(1200);
-
-  // ---------- Entrada por el QR de las 9hs: termina acá ----------
-  if (FASE === "9") {
-    mostrarCartelFinal(MENSAJE_FINAL);
-    return;
-  }
 
   // ---------- FASE FINAL: las 20hs (vuelve el jefe y aparece el chat de Fede en la lista) ----------
   await pedirToque("Hablar con el jefe (20hs)", MENSAJE_TAREAS, ESPERA_BOTON);
